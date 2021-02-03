@@ -8,15 +8,17 @@ openssl req -new -x509 -days 1826 -config openssl-ca.config -key ca.key -out ca.
 openssl genrsa -out ia.key 4096
 
 # Create a certificate request 
-openssl req -new -config openssl-uk-ljfw0f72.config -key ia.key -out ia.csr
+openssl req -new -config openssl-tony.config -key ia.key -out tony.csr
+
+openssl req -in tony.csr -noout -text | grep DNS
 
 # Process the certificate request for the subordinate using the root CA
-openssl x509 -req -days 730 -in ia.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out ia.crt
+openssl x509 -req -in tony.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out tony.crt -days 730 -extensions "req_ext" -extfile openssl-tony.config
+
+openssl x509 -in tony.crt -noout -text | grep DNS
 
 # Package keys and certs in a PKCS12 File
-openssl pkcs12 -export -out ia.p12 -inkey ia.key -in ia.crt -chain -CAfile ca.crt
+openssl pkcs12 -export -out tony.p12 -inkey tony.key -in tony.crt -name "Tony@CloudEatsCloud"
 
-
-
-
-
+# Package keys and certs in a PKCS12 File - if you want to package the CA with the client cert
+openssl pkcs12 -export -out tony.p12 -inkey tony.key -in tony.crt -chain -CAfile ca.crt -name "Tony@CloudEatsCloud"
